@@ -1,0 +1,104 @@
+Compilation guide
+
+1) Clone ffmpeg and x264 from master
+
+2) Update the configure file located inside the ffmpeg folder.
+
+Change the following lines:
+
+SLIBNAME_WITH_MAJOR='$(SLIBNAME).$(LIBMAJOR)'
+LIB_INSTALL_EXTRA_CMD='$$(RANLIB) "$(LIBDIR)/$(LIBNAME)"'
+SLIB_INSTALL_NAME='$(SLIBNAME_WITH_VERSION)'
+SLIB_INSTALL_LINKS='$(SLIBNAME_WITH_MAJOR) $(SLIBNAME)'
+
+with these lines:
+
+SLIBNAME_WITH_MAJOR='$(SLIBPREF)$(FULLNAME)-$(LIBMAJOR)$(SLIBSUF)'
+LIB_INSTALL_EXTRA_CMD='$$(RANLIB) "$(LIBDIR)/$(LIBNAME)"'
+SLIB_INSTALL_NAME='$(SLIBNAME_WITH_MAJOR)'
+SLIB_INSTALL_LINKS='$(SLIBNAME)'
+
+
+3) Create the following script inside the ffmpeg folder and execute it to generate the ffmpeg binary
+   Change the path of the NDK if needed
+
+
+#!/bin/bash
+
+NDK=$HOME/android-ndk-r10d
+
+SYSROOT=$NDK/platforms/android-9/arch-arm/
+
+TOOLCHAIN=$NDK/toolchains/arm-linux-androideabi-4.8/prebuilt/linux-x86_64
+
+function build_one
+
+{
+
+./configure \
+    --arch=arm \
+    --cpu=cortex-a8 \
+    --target-os=linux \
+    --enable-runtime-cpudetect \
+    --enable-pic \
+    --disable-shared \
+    --enable-static \
+    --cross-prefix=$TOOLCHAIN/bin/arm-linux-androideabi- \
+    --enable-cross-compile \
+    --sysroot=$SYSROOT \
+    --extra-cflags="-I../x264 -mfloat-abi=softfp -mfpu=neon -fPIE -pie" \
+    --extra-ldflags="-L../x264 -fPIE -pie" \
+    --enable-version3 \
+    --enable-gpl \
+    \
+    --disable-doc \
+    --enable-yasm \
+    \
+    --disable-everything \
+    --enable-decoder=mpeg4 \
+    --enable-decoder=aac --enable-decoder=h264 \
+    --enable-decoder=libx264 --enable-encoder=libx264 \
+    --enable-encoder=mpeg4 \
+    --enable-encoder=aac --enable-encoder=h264 \
+    --enable-parser=aac --enable-parser=mpeg4video \
+    --enable-parser=ac3 --enable-parser=h261 \
+    --enable-parser=h264 --enable-parser=vc1 \
+    --enable-demuxer=mpegvideo --enable-demuxer=aac \
+    --enable-demuxer=m4v --enable-demuxer=mov \
+    --enable-demuxer=h264 --enable-demuxer=vc1 \
+    --enable-muxer=h264 --enable-muxer=mpeg2video \
+    --enable-muxer=mp4 --enable-muxer=mov \
+    --enable-protocol=file \
+    --enable-indev=v4l --enable-indev=v4l2 \
+    --enable-filter=aresample \
+    \
+    --disable-indevs \
+    --enable-indev=lavfi \
+    --disable-outdevs \
+    \
+    --enable-hwaccels \
+    \
+    --enable-ffmpeg \
+    --disable-ffplay \
+    --disable-ffprobe \
+    --disable-ffserver \
+    --disable-symver \
+    --disable-network \
+    \
+    --enable-libx264 \
+    --enable-zlib \
+    --enable-muxer=md5
+
+
+    $ADDITIONAL_CONFIGURE_FLAG
+
+make clean
+
+make
+
+
+}
+
+PREFIX=$(pwd)/android/$CPU 
+
+build_one
