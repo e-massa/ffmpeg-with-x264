@@ -1,5 +1,17 @@
 Compilation guide
 
+1) Download the NDK from
+https://developer.android.com/tools/sdk/ndk/index.html
+
+and unpack it to your favourite folder 
+
+2) move to the ffmpeg directory
+
+3) change the NDK variable on the build_android.sh script and run it!
+
+
+How to reproduce the repository guide
+
 1) Clone ffmpeg and x264 from master
 
 2) Update the configure file located inside the ffmpeg folder.
